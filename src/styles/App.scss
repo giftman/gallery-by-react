@@ -48,9 +48,8 @@ html, body {
     .img-figure {
       @include abpos;
       width: 320px;
-      height: 360px;
       margin: 0;
-      padding: 40px;
+      padding: 30px;
       box-sizing: border-box;
       background-color: #fff;
       cursor: pointer;
@@ -61,7 +60,10 @@ html, body {
         transform: translate(320px) rotateY(180deg);
       }
     }
-
+    .img-body {
+      width:240px;
+      resizeMode:contain;
+    }
     .img-back {
       @include abpos;
       left: 0;

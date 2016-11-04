@@ -3,18 +3,18 @@ require('styles/App.scss');
 import React from 'react';
 import ReactDOM from 'react-dom';
 //获取图片相关的数据
-let imageDatas = require('json!../data/imageDatas.json');
+let allImageDatas = require('json!../data/imageDatas.json');
 
 //利用自执行函数，将图片名信息转成图片URL路径信息
 
-imageDatas = ((imageDatasArr) => {
-  for (var i = 0, j = imageDatasArr.length; i < j; i++) {
-    let singleImageData = imageDatasArr[i];
-    singleImageData.imageURL = require('../images/' + singleImageData.fileName);
-    imageDatasArr[i] = singleImageData;
-  }
-  return imageDatasArr;
-})(imageDatas);
+// imageDatas = ((imageDatasArr) => {
+//   for (var i = 0, j = imageDatasArr.length; i < j; i++) {
+//     let singleImageData = imageDatasArr[i];
+//     singleImageData.imageURL = require('../images/' + singleImageData.fileName);
+//     imageDatasArr[i] = singleImageData;
+//   }
+//   return imageDatasArr;
+// })(imageDatas);
 
 //获取区间内的一个随机值
 
@@ -69,12 +69,15 @@ class ImgFigure extends React.Component {
 
     return (
       <figure className={ imgFigureClassName } style={ styleObj } onClick={this.handleClick}>
-        <img src={this.props.data.imageURL} alt={this.props.data.title}/>
+        <img className="img-body" src={this.props.data.img} alt={this.props.data.title}/>
         <figcaption>
           <h2 className="img-title">{this.props.data.title}</h2>
           <div className="img-back" onClick={this.handleClick}>
             <p>
               {this.props.data.title}
+            </p>
+            <p>
+              {this.props.data.desc}
             </p>
           </div>
         </figcaption>
@@ -94,25 +97,19 @@ class ControllerUnit extends React.Component {
    */
   handleClick(e) {
     //翻转和居中图片
-    if (this.props.arrange.isCenter) {
-      this.props.inverse()
-    } else {
-      this.props.center();
-    }
-    e.stopPropagation();
-    e.preventDefault();
+    this.props.handleClick();
   }
 
   render() {
     let controllerUnitClassName = 'controller-unit';
     //如果对应的是居中的图片，显示控制按钮的居中态
-    if (this.props.arrange.isCenter) {
-      controllerUnitClassName += ' is-center ';
-      //如果翻转显示翻转状态
-      if (this.props.arrange.isInverse) {
-        controllerUnitClassName += 'is-inverse'
-      }
-    }
+    // if (this.props.arrange.isCenter) {
+    //   controllerUnitClassName += ' is-center ';
+    //   //如果翻转显示翻转状态
+    //   if (this.props.arrange.isInverse) {
+    //     controllerUnitClassName += 'is-inverse'
+    //   }
+    // }
     return (
       <span className={ controllerUnitClassName } onClick={this.handleClick}></span>
     )
@@ -138,22 +135,31 @@ class GalleryByReactApp extends React.Component {
         topY: [0, 0]
       }
     };
-
+    this.allImages = [];
+    let len = allImageDatas.length;
+    this.imgControlN = Math.floor(len/10);
+    for(let i=0;i<=this.imgControlN;i++){
+      if(i==this.imgControlN){
+        this.allImages[i] = allImageDatas.splice(0,len%10);
+      }else{
+        this.allImages[i] = allImageDatas.splice(0,10);  
+      }
+    }
     this.state = {
       imgsArrangeArr: [
-        //{
-        //  pos:{
-        //    left:'0',
-        //    top:'0'
-        //  },
-        //    rotate:0, //旋转角度
-        //isInverse:false //正反面
-        //isCenter:false 图片是否居中
-        //}
-      ]
+      ],
+      imageDatas:this.allImages[0],
     };
   }
 
+  handleClick(index){
+    console.log('handleClick:' + index);
+    console.log('imgControlN:' + this.imgControlN);
+    console.log('allImage:' + allImageDatas);
+   this.setState({
+      imageDatas:this.allImages[index]
+    })
+  }
   //翻转图片的函数
   inverse(index) {
     return () => {
@@ -284,7 +290,7 @@ class GalleryByReactApp extends React.Component {
   render() {
     var controllerUnits = [],
       imgFigures = [];
-    imageDatas.forEach((value, index) => {
+    this.state.imageDatas.forEach((value, index) => {
       if (!this.state.imgsArrangeArr[index]) {
         this.state.imgsArrangeArr[index] = {
           pos: {
@@ -299,10 +305,12 @@ class GalleryByReactApp extends React.Component {
       imgFigures.push(<ImgFigure data={value} key={index} ref={'imgFigure'+index}
                                  arrange={this.state.imgsArrangeArr[index]} inverse={this.inverse(index)}
                                  center={this.center(index)}/>);
-      controllerUnits.push(<ControllerUnit key={index} arrange={this.state.imgsArrangeArr[index]}
-                                           inverse={this.inverse(index)}
-                                           center={this.center(index)}/>)
+      
     });
+    for(let i = 0;i<=this.imgControlN;i++){
+      console.log('control:'+i);
+      controllerUnits.push(<ControllerUnit key={i} handleClick={()=>this.handleClick(i)}/>)
+    }
     return (
       <section className="stage" ref="stage">
         <section className="img-sec">
